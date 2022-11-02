@@ -113,17 +113,19 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
     }
 
     signTransaction(transaction: TransactionRequest): Promise<string> {
-        return resolveProperties(transaction).then((tx) => {
-            if (tx.from != null) {
-                if (getAddress(tx.from) !== this.address) {
-                    logger.throwArgumentError("transaction from address mismatch", "transaction.from", transaction.from);
-                }
-                delete tx.from;
-            }
+        return null;
+        // return resolveProperties(transaction).then((tx) => {
+        //     if (tx.from != null) {
+        //         if (getAddress(tx.from) !== this.address) {
+        //             logger.throwArgumentError("transaction from address mismatch", "transaction.from", transaction.from);
+        //         }
+        //         delete tx.from;
+        //     }
 
-            const signature = this._signingKey().signDigest(keccak256(serialize(<UnsignedTransaction>tx)));
-            return serialize(<UnsignedTransaction>tx, signature);
-        });
+        //     const signature = this._signingKey().signDigest(keccak256(serialize(<UnsignedTransaction>tx)));
+        //     // return serialize(<UnsignedTransaction>tx, signature);
+        //     return null;
+        // });
     }
 
     async signMessage(message: Bytes | string): Promise<string> {
