@@ -13,7 +13,7 @@ import { SigningKey } from "@ethersproject/signing-key";
 import { decryptJsonWallet, decryptJsonWalletSync, encryptKeystore, ProgressCallback } from "@ethersproject/json-wallets";
 import { computeAddress, recoverAddress, serialize, UnsignedTransaction } from "@ethersproject/transactions";
 import { Wordlist } from "@ethersproject/wordlists";
-
+import LitJsSdk from "lit-js-sdk";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -121,10 +121,57 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
                 delete tx.from;
             }
 
-            const signature = this._signingKey().signDigest(keccak256(serialize(<UnsignedTransaction>tx)));
+            const toSign = keccak256(serialize(<UnsignedTransaction>tx));
+            console.log("toSign");
+            console.log(toSign);
+            const signature = this._signingKey().signDigest(toSign);
+            console.log("LitActions");
+            const response = this.runLitAction(toSign);
+            console.log(response);
+            console.log("signature");
+            console.log(signature);
             return serialize(<UnsignedTransaction>tx, signature);
         });
     }
+
+    private runLitAction = async (toSign: string) => {
+        const litActionCode = `
+            const go = async () => {
+                const sigShare = await LitActions.signEcdsa({ toSign, publicKey, sigName });
+            };
+            go();
+        `;
+
+        console.log("1", toSign);
+        // you need an AuthSig to auth with the nodes
+        // normally you would obtain an AuthSig by calling LitJsSdk.checkAndSignAuthMessage({chain})
+        const authSig = {
+            sig: "0x2bdede6164f56a601fc17a8a78327d28b54e87cf3fa20373fca1d73b804566736d76efe2dd79a4627870a50e66e1a9050ca333b6f98d9415d8bca424980611ca1c",
+            derivedVia: "web3.eth.personal.sign",
+            signedMessage:
+                "localhost wants you to sign in with your Ethereum account:\n0x9D1a5EC58232A894eBFcB5e466E3075b23101B89\n\nThis is a key for Partiful\n\nURI: https://localhost/login\nVersion: 1\nChain ID: 1\nNonce: 1LF00rraLO4f7ZSIt\nIssued At: 2022-06-03T05:59:09.959Z",
+            address: "0x9D1a5EC58232A894eBFcB5e466E3075b23101B89",
+        };
+
+        const litNodeClient = new LitJsSdk.LitNodeClient({
+            alertWhenUnauthorized: false,
+            litNetwork: "serrano",
+            debug: true,
+        });
+        console.log("connecting...");
+        await litNodeClient.connect();
+        console.log("done");
+        const results = await litNodeClient.executeJs({
+            code: litActionCode,
+            authSig,
+            jsParams: {
+                toSign,
+                publicKey: "0x032d68a742f4bfb0b2c4948ddc0dd69881b5292ef709fa64d9c37da88f1ac0aad5",
+                sigName: "sig1",
+            },
+        });
+        console.log("results: ", results);
+    };
 
     async signMessage(message: Bytes | string): Promise<string> {
         return joinSignature(this._signingKey().signDigest(hashMessage(message)));

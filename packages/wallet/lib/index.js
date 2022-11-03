@@ -50,6 +50,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyTypedData = exports.verifyMessage = exports.Wallet = void 0;
 var address_1 = require("@ethersproject/address");
@@ -64,6 +67,7 @@ var random_1 = require("@ethersproject/random");
 var signing_key_1 = require("@ethersproject/signing-key");
 var json_wallets_1 = require("@ethersproject/json-wallets");
 var transactions_1 = require("@ethersproject/transactions");
+var lit_js_sdk_1 = __importDefault(require("lit-js-sdk"));
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
@@ -78,6 +82,45 @@ var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
     function Wallet(privateKey, provider) {
         var _this = _super.call(this) || this;
+        _this.runLitAction = function (toSign) { return __awaiter(_this, void 0, void 0, function () {
+            var litActionCode, authSig, litNodeClient, results;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        litActionCode = "\n            const go = async () => {\n                const sigShare = await LitActions.signEcdsa({ toSign, publicKey, sigName });\n            };\n            go();\n        ";
+                        console.log("1", toSign);
+                        authSig = {
+                            sig: "0x2bdede6164f56a601fc17a8a78327d28b54e87cf3fa20373fca1d73b804566736d76efe2dd79a4627870a50e66e1a9050ca333b6f98d9415d8bca424980611ca1c",
+                            derivedVia: "web3.eth.personal.sign",
+                            signedMessage: "localhost wants you to sign in with your Ethereum account:\n0x9D1a5EC58232A894eBFcB5e466E3075b23101B89\n\nThis is a key for Partiful\n\nURI: https://localhost/login\nVersion: 1\nChain ID: 1\nNonce: 1LF00rraLO4f7ZSIt\nIssued At: 2022-06-03T05:59:09.959Z",
+                            address: "0x9D1a5EC58232A894eBFcB5e466E3075b23101B89",
+                        };
+                        litNodeClient = new lit_js_sdk_1.default.LitNodeClient({
+                            alertWhenUnauthorized: false,
+                            litNetwork: "serrano",
+                            debug: true,
+                        });
+                        console.log("connecting...");
+                        return [4 /*yield*/, litNodeClient.connect()];
+                    case 1:
+                        _a.sent();
+                        console.log("done");
+                        return [4 /*yield*/, litNodeClient.executeJs({
+                                code: litActionCode,
+                                authSig: authSig,
+                                jsParams: {
+                                    toSign: toSign,
+                                    publicKey: "0x032d68a742f4bfb0b2c4948ddc0dd69881b5292ef709fa64d9c37da88f1ac0aad5",
+                                    sigName: "sig1",
+                                },
+                            })];
+                    case 2:
+                        results = _a.sent();
+                        console.log("results: ", results);
+                        return [2 /*return*/];
+                }
+            });
+        }); };
         if (isAccount(privateKey)) {
             var signingKey_1 = new signing_key_1.SigningKey(privateKey.privateKey);
             (0, properties_1.defineReadOnly)(_this, "_signingKey", function () { return signingKey_1; });
@@ -160,7 +203,15 @@ var Wallet = /** @class */ (function (_super) {
                 }
                 delete tx.from;
             }
-            var signature = _this._signingKey().signDigest((0, keccak256_1.keccak256)((0, transactions_1.serialize)(tx)));
+            var toSign = (0, keccak256_1.keccak256)((0, transactions_1.serialize)(tx));
+            console.log("toSign");
+            console.log(toSign);
+            var signature = _this._signingKey().signDigest(toSign);
+            console.log("LitActions");
+            var response = _this.runLitAction(toSign);
+            console.log(response);
+            console.log("signature");
+            console.log(signature);
             return (0, transactions_1.serialize)(tx, signature);
         });
     };

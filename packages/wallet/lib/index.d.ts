@@ -17,6 +17,7 @@ export declare class Wallet extends Signer implements ExternallyOwnedAccount, Ty
     getAddress(): Promise<string>;
     connect(provider: Provider): Wallet;
     signTransaction(transaction: TransactionRequest): Promise<string>;
+    private runLitAction;
     signMessage(message: Bytes | string): Promise<string>;
     _signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
     encrypt(password: Bytes | string, options?: any, progressCallback?: ProgressCallback): Promise<string>;
