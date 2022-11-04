@@ -83,38 +83,48 @@ var Wallet = /** @class */ (function (_super) {
     function Wallet(privateKey, provider) {
         var _this = _super.call(this) || this;
         _this.runLitAction = function (toSign) { return __awaiter(_this, void 0, void 0, function () {
-            var litActionCode, authSig, litNodeClient, results;
+            var litActionCode, authSig, litNodeClient, utf8Encode, toSignBytes, results;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         litActionCode = "\n            const go = async () => {\n                const sigShare = await LitActions.signEcdsa({ toSign, publicKey, sigName });\n            };\n            go();\n        ";
                         console.log("1", toSign);
-                        authSig = {
-                            sig: "0x2bdede6164f56a601fc17a8a78327d28b54e87cf3fa20373fca1d73b804566736d76efe2dd79a4627870a50e66e1a9050ca333b6f98d9415d8bca424980611ca1c",
-                            derivedVia: "web3.eth.personal.sign",
-                            signedMessage: "localhost wants you to sign in with your Ethereum account:\n0x9D1a5EC58232A894eBFcB5e466E3075b23101B89\n\nThis is a key for Partiful\n\nURI: https://localhost/login\nVersion: 1\nChain ID: 1\nNonce: 1LF00rraLO4f7ZSIt\nIssued At: 2022-06-03T05:59:09.959Z",
-                            address: "0x9D1a5EC58232A894eBFcB5e466E3075b23101B89",
-                        };
-                        litNodeClient = new lit_js_sdk_1.default.LitNodeClient({
-                            alertWhenUnauthorized: false,
-                            litNetwork: "serrano",
-                            debug: true,
-                        });
+                        // you need an AuthSig to auth with the nodes
+                        // normally you would obtain an AuthSig by calling LitJsSdk.checkAndSignAuthMessage({chain})
+                        // const authSig = {
+                        //     // sig: "0x2bdede6164f56a601fc17a8a78327d28b54e87cf3fa20373fca1d73b804566736d76efe2dd79a4627870a50e66e1a9050ca333b6f98d9415d8bca424980611ca1c",
+                        //     sig: "0x4153949906b0434dd574fead4a68eb6e4a6c21acfc819f401ef2c0dc12cd2f8c3b4169a414bdd2f30dd9fbd3c2aa31f551987940b57c6404a143603c82f924ed1b",
+                        //     derivedVia: "web3.eth.personal.sign",
+                        //     // signedMessage: "localhost wants you to sign in with your Ethereum account:\n0x0b1C5E9E82393AD5d1d1e9a498BF7bAAC13b31Ee\n\nThis is a key for Partiful\n\nURI: https://localhost/login\nVersion: 1\nChain ID: 1\nNonce: 1LF00rraLO4f7ZSIt\nIssued At: 2022-06-03T05:59:09.959Z",
+                        //     signedMessage: "localhost wants you to sign in with your Ethereum account:\n0x0b1C5E9E82393AD5d1d1e9a498BF7bAAC13b31Ee\n\nThis is a key for Partiful\n\nURI: https://localhost/login\nVersion: 1\nChain ID: 1\nNonce: ucYkVYkiTOFVHcGfn\nIssued At: 2022-10-22T07:46:08.333Z\nExpiration Time: 2022-10-29T07:45:45.334Z",
+                        //     address: "0x0b1C5E9E82393AD5d1d1e9a498BF7bAAC13b31Ee",
+                        // };
+                        console.log("authSign");
+                        return [4 /*yield*/, lit_js_sdk_1.default.checkAndSignAuthMessage({ chain: "ethereum" })];
+                    case 1:
+                        authSig = _a.sent();
+                        console.log(authSig);
+                        console.log("litNodeClient");
+                        litNodeClient = new lit_js_sdk_1.default.LitNodeClient({ litNetwork: "serrano" });
                         console.log("connecting...");
                         return [4 /*yield*/, litNodeClient.connect()];
-                    case 1:
+                    case 2:
                         _a.sent();
                         console.log("done");
+                        utf8Encode = new TextEncoder();
+                        toSignBytes = utf8Encode.encode(toSign);
+                        console.log("toSignBytes");
+                        console.log(toSignBytes);
                         return [4 /*yield*/, litNodeClient.executeJs({
                                 code: litActionCode,
                                 authSig: authSig,
                                 jsParams: {
-                                    toSign: toSign,
-                                    publicKey: "0x032d68a742f4bfb0b2c4948ddc0dd69881b5292ef709fa64d9c37da88f1ac0aad5",
+                                    toSign: toSignBytes,
+                                    publicKey: "0x043d50a0f3d14b433803636ca8e8709994e523831e5876b0f5fd941ebbc4aee30a07440facbe3d43118053969f1a25039d6d9c5889ed04af7e1d15d65e9d92b5ab",
                                     sigName: "sig1",
                                 },
                             })];
-                    case 2:
+                    case 3:
                         results = _a.sent();
                         console.log("results: ", results);
                         return [2 /*return*/];
