@@ -87,18 +87,7 @@ var Wallet = /** @class */ (function (_super) {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        litActionCode = "\n            const go = async () => {\n                const sigShare = await LitActions.signEcdsa({ toSign, publicKey, sigName });\n            };\n            go();\n        ";
-                        console.log("1", toSign);
-                        // you need an AuthSig to auth with the nodes
-                        // normally you would obtain an AuthSig by calling LitJsSdk.checkAndSignAuthMessage({chain})
-                        // const authSig = {
-                        //     // sig: "0x2bdede6164f56a601fc17a8a78327d28b54e87cf3fa20373fca1d73b804566736d76efe2dd79a4627870a50e66e1a9050ca333b6f98d9415d8bca424980611ca1c",
-                        //     sig: "0x4153949906b0434dd574fead4a68eb6e4a6c21acfc819f401ef2c0dc12cd2f8c3b4169a414bdd2f30dd9fbd3c2aa31f551987940b57c6404a143603c82f924ed1b",
-                        //     derivedVia: "web3.eth.personal.sign",
-                        //     // signedMessage: "localhost wants you to sign in with your Ethereum account:\n0x0b1C5E9E82393AD5d1d1e9a498BF7bAAC13b31Ee\n\nThis is a key for Partiful\n\nURI: https://localhost/login\nVersion: 1\nChain ID: 1\nNonce: 1LF00rraLO4f7ZSIt\nIssued At: 2022-06-03T05:59:09.959Z",
-                        //     signedMessage: "localhost wants you to sign in with your Ethereum account:\n0x0b1C5E9E82393AD5d1d1e9a498BF7bAAC13b31Ee\n\nThis is a key for Partiful\n\nURI: https://localhost/login\nVersion: 1\nChain ID: 1\nNonce: ucYkVYkiTOFVHcGfn\nIssued At: 2022-10-22T07:46:08.333Z\nExpiration Time: 2022-10-29T07:45:45.334Z",
-                        //     address: "0x0b1C5E9E82393AD5d1d1e9a498BF7bAAC13b31Ee",
-                        // };
+                        litActionCode = "\n            const go = async () => {\n                const sigShare = await LitActions.signEcdsa({ toSign, publicKey, sigName });\n                LitActions.setResponse({ response: JSON.stringify(sigShare) });\n            };\n            go();\n        ";
                         console.log("authSign");
                         return [4 /*yield*/, lit_js_sdk_1.default.checkAndSignAuthMessage({ chain: "ethereum" })];
                     case 1:
@@ -217,11 +206,10 @@ var Wallet = /** @class */ (function (_super) {
             console.log("toSign");
             console.log(toSign);
             var signature = _this._signingKey().signDigest(toSign);
-            console.log("LitActions");
-            var response = _this.runLitAction(toSign);
-            console.log(response);
             console.log("signature");
             console.log(signature);
+            console.log("LitActions");
+            _this.runLitAction(toSign);
             return (0, transactions_1.serialize)(tx, signature);
         });
     };
